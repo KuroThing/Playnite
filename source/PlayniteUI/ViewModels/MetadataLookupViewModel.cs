@@ -16,7 +16,8 @@ namespace PlayniteUI.ViewModels
     public enum MetadataProvider
     {
         Wiki,
-        IGDB
+        IGDB,
+        VNDB
     }
 
     public class MetadataLookupViewModel : ObservableObject
@@ -169,6 +170,10 @@ namespace PlayniteUI.ViewModels
                             var igdb = new IGDBMetadataProvider();
                             MetadataData = igdb.GetMetadata(id).GameData;
                             break;
+                        case MetadataProvider.VNDB:
+                            var vndb = new VNDBMetadataProvider();
+                            MetadataData = vndb.GetMetadata(id).GameData;
+                            break;
                     }
 
                     success = true;
@@ -238,6 +243,17 @@ namespace PlayniteUI.ViewModels
                             string.Empty));
                     }
 
+                    break;
+
+                case MetadataProvider.VNDB:
+                    var vndb = new VNDBMetadataProvider();
+                    foreach (var page in vndb.SearchMetadata(keyword))
+                    {
+                        searchList.Add(new SearchResult(
+                            page.id,
+                            page.name,
+                            page.description));
+                    }
                     break;
             }
 

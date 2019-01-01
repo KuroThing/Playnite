@@ -926,6 +926,15 @@ namespace PlayniteUI.ViewModels
             });
         }
 
+        public RelayCommand<object> DownloadVndbMetadataCommand
+        {
+            get => new RelayCommand<object>((a) =>
+            {
+                var model = new MetadataLookupViewModel(MetadataProvider.VNDB, MetadataLookupWindowFactory.Instance, dialogs, resources);
+                DoMetadataLookup(model);
+            });
+        }
+
         public RelayCommand<object> DownloadStoreCommand
         {
             get => new RelayCommand<object>((a) =>

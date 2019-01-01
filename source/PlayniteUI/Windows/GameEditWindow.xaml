@@ -695,6 +695,7 @@
                         <ContextMenu Placement="Top" Width="{Binding PlacementTarget.ActualWidth, RelativeSource={RelativeSource Self}}">
                             <MenuItem Header="IGDB" Command="{Binding DownloadIGDBMetadataCommand}"/>
                             <MenuItem Header="Wiki" Command="{Binding DownloadWikiMetadataCommand}"/>
+                            <MenuItem Header="Vndb" Command="{Binding DownloadVndbMetadataCommand}"/>
                             <MenuItem Header="{DynamicResource LOCMetaSourceStore}" Command="{Binding DownloadStoreCommand}"
                                       Visibility="{Binding EditingGame.IsCustomGame, Converter={pui:InvertedBooleanToVisibilityConverter}}"/>
                         </ContextMenu>

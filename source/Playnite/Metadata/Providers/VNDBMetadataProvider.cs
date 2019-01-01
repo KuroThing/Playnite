@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Configuration;
 using System.Linq;
 using System.Text.RegularExpressions;
 using LiteDB;
@@ -35,12 +36,30 @@ namespace Playnite.Metadata.Providers
                 .SelectMany(r => r.Producers)
                 .ToArray();
 
+            var allowNsfw = Boolean.Parse(ConfigurationManager.AppSettings["VndbAllowNsfwImages"] ?? "false");
+            var preferNsfw = Boolean.Parse(ConfigurationManager.AppSettings["VndbPreferNsfwImages"] ?? "false");
+            if (!allowNsfw)
+                preferNsfw = false;
+
             var game = new Game(vn.Name);
-            game.CoverImage = vn.Image;
+            if (!vn.IsImageNsfw)
+            {
+                game.CoverImage = vn.Image;
+            }
+            else
+            {
+                if (allowNsfw)
+                    game.CoverImage = vn.Image;
+            }
+
+            var screenshots = vn.Screenshots.ToArray();
+
+            if (!allowNsfw)
+                screenshots = screenshots.Where(s => !s.IsNsfw).ToArray();
+            screenshots = screenshots.OrderByDescending(s => s.IsNsfw == preferNsfw).ToArray();
+
             // TODO: Add image into database, to reduce stress on vndb cdn?
-            // Prefer NSFW Screenshots
-            game.BackgroundImage = vn.Screenshots.FirstOrDefault(s => !s.IsNsfw)?.Url
-                                   ?? vn.Screenshots.FirstOrDefault()?.Url;
+            game.BackgroundImage = screenshots.FirstOrDefault()?.Url;
             game.Description = this.ConvertBBCode(vn.Description);
 
             if (vn.Released.Year.HasValue && vn.Released.Month.HasValue && vn.Released.Day.HasValue)
@@ -56,6 +75,9 @@ namespace Playnite.Metadata.Providers
                 game.Links.Add(new Link("Wikipedia", "https://en.wikipedia.org/wiki/" + vn.VisualNovelLinks.Wikipedia));
             if (!string.IsNullOrWhiteSpace(vn.VisualNovelLinks.Renai))
                 game.Links.Add(new Link("Renai", "https://renai.us/game/" + vn.VisualNovelLinks.Renai));
+
+            if (game.Links.Count == 0)
+                game.Links = null;
 
             game.Developers =
                 new ComparableList<String>(producers.Where(p => p.IsDeveloper).Select(p => p.Name).Distinct());
